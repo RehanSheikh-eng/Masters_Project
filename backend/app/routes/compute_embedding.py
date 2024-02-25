@@ -23,16 +23,27 @@ def compute_embedding():
     400: Bad request, such as no file part included or no file selected.
          Returns a JSON object with 'success': false and an error message.
     """
+    if current_app.config['DEBUG']:
+        current_app.logger.debug('Compute embedding called.')
+
     if 'file' not in request.files:
-        return jsonify({'success': False, 'error': 'No file part'}), 400
+        error_msg = 'No file part'
+        if current_app.config['DEBUG']:
+            current_app.logger.debug(f'Error: {error_msg}')
+        return jsonify({'success': False, 'error': error_msg}), 400
 
     file = request.files['file']
     if file.filename == '':
-        return jsonify({'success': False, 'error': 'No selected file'}), 400
+        error_msg = 'No selected file'
+        if current_app.config['DEBUG']:
+            current_app.logger.debug(f'Error: {error_msg}')
+        return jsonify({'success': False, 'error': error_msg}), 400
 
     filename = secure_filename(file.filename)
     file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file.save(file_path)
+    if current_app.config['DEBUG']:
+        current_app.logger.debug(f'File {filename} saved to {file_path}')
 
     # Process the image and compute the embedding
     image = cv2.imread(file_path)
@@ -46,6 +57,9 @@ def compute_embedding():
     model = SamPredictor(sam)
     model.set_image(image)
     image_embedding = model.get_image_embedding().cpu().numpy()
+
+    if current_app.config['DEBUG']:
+        current_app.logger.debug('Embedding computation completed.')
 
     os.remove(file_path)  # Clean up the uploaded file
 

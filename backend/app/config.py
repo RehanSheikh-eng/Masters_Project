@@ -9,7 +9,7 @@ class Config:
 
 class TestingConfig(Config):
     TESTING = True
-
+    DEBUG = True
 
 class DevelopmentConfig(Config):
     DEBUG = True
