@@ -1,6 +1,7 @@
 from flask import Flask
 from .config import Config
 from .routes.compute_embedding import compute_embedding_bp
+from .routes.gpt_4V import gpt_4v_bp
 
 
 def create_app(config_name=None):
@@ -16,5 +17,6 @@ def create_app(config_name=None):
         app.config.from_object('app.config.Config')  # Default configuration
 
     app.register_blueprint(compute_embedding_bp)
-
+    app.register_blueprint(gpt_4v_bp)
+    
     return app
