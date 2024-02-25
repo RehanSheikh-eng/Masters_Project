@@ -11,14 +11,15 @@ _ext
 build/
 dist/
 wheels/
-
+env/
+temp/
 # pytorch/python/numpy formats
 *.pth
 *.pkl
 *.npy
 *.ts
 model_ts*.txt
-
+*.env
 # onnx models
 *.onnx
 
