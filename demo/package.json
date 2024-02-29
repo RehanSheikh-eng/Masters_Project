@@ -26,7 +26,6 @@
     "babel-loader": "^8.2.5",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
-    "dotenv": "^16.0.2",
     "dotenv-webpack": "^8.0.1",
     "eslint": "^8.22.0",
     "eslint-plugin-react": "^7.31.0",
@@ -52,11 +51,12 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@vis.gl/react-google-maps": "^0.7.1",
     "npyjs": "^0.4.0",
     "onnxruntime-web": "^1.14.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "underscore": "^1.13.6",
-    "react-refresh": "^0.14.0"
+    "react-refresh": "^0.14.0",
+    "underscore": "^1.13.6"
   }
 }
