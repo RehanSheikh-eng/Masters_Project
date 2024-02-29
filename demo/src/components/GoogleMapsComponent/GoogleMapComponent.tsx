@@ -1,7 +1,7 @@
 // GoogleMapComponent.tsx
 import React, {useState} from 'react';
-import { APIProvider, Map, ControlPosition } from '@vis.gl/react-google-maps';
-import { CustomMapControl } from './MapControl';
+import { APIProvider, Map, ControlPosition, MapControl } from '@vis.gl/react-google-maps';
+import { SearchMapControl } from './SearchMapControl';
 import MapHandler from './MapHandler';
 
 interface GoogleMapComponentProps {
@@ -14,6 +14,11 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ apiKey, default
   
   const [selectedPlace, setSelectedPlace] =
   useState<google.maps.places.PlaceResult | null>(null);
+  const [isMapInteractive, setIsMapInteractive] = useState(true);
+
+  const toggleMapInteraction = () => {
+    setIsMapInteractive(!isMapInteractive);
+  };
   
   return (
     <APIProvider apiKey={apiKey}>
@@ -24,16 +29,22 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ apiKey, default
         gestureHandling={'greedy'}
         disableDefaultUI={true}
         style={{ width: '100%', height: '100%' }}
-      />
-
-      <CustomMapControl
-        controlPosition={ControlPosition.TOP}
-        onPlaceSelect={setSelectedPlace}
-      />
-
-      <MapHandler 
-        place={selectedPlace} 
-      />
+        draggable={isMapInteractive}
+        scrollwheel={isMapInteractive}
+      >
+        <MapControl position={ControlPosition.TOP_LEFT}>
+          <button onClick={toggleMapInteraction}>
+            {isMapInteractive ? 'Start Chat' : 'End Chat'}
+          </button>
+        </MapControl>
+        <SearchMapControl
+          controlPosition={ControlPosition.TOP}
+          onPlaceSelect={setSelectedPlace}
+        />      
+        <MapHandler 
+          place={selectedPlace} 
+        />
+      </Map>
     </APIProvider>
   );
 };

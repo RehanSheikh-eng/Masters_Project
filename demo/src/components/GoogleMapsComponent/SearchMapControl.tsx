@@ -7,7 +7,7 @@ type CustomAutocompleteControlProps = {
   onPlaceSelect: (place: google.maps.places.PlaceResult | null) => void;
 };
 
-export const CustomMapControl = ({
+export const SearchMapControl = ({
   controlPosition,
   onPlaceSelect
 }: CustomAutocompleteControlProps) => {
