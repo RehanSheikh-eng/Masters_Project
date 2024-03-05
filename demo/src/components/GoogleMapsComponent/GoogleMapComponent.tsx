@@ -14,12 +14,13 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ apiKey, default
   
   const [selectedPlace, setSelectedPlace] =
   useState<google.maps.places.PlaceResult | null>(null);
+
   const [isMapInteractive, setIsMapInteractive] = useState(true);
 
   const toggleMapInteraction = () => {
     setIsMapInteractive(!isMapInteractive);
   };
-  
+
   return (
     <APIProvider apiKey={apiKey}>
       <Map
@@ -31,6 +32,7 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ apiKey, default
         style={{ width: '100%', height: '100%' }}
         draggable={isMapInteractive}
         scrollwheel={isMapInteractive}
+        tilt={0}
       >
         <MapControl position={ControlPosition.TOP_LEFT}>
           <button onClick={toggleMapInteraction}>
