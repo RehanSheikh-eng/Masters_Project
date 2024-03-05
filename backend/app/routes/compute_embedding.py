@@ -5,7 +5,8 @@ import cv2
 import os
 import torch
 from segment_anything import sam_model_registry, SamPredictor
-
+import requests
+import base64
 # Blueprint setup
 compute_embedding_bp = Blueprint('compute_embedding', __name__, url_prefix='/api')
 
@@ -26,27 +27,32 @@ def compute_embedding():
     if current_app.config['DEBUG']:
         current_app.logger.debug('Compute embedding called.')
 
-    if 'file' not in request.files:
-        error_msg = 'No file part'
-        if current_app.config['DEBUG']:
-            current_app.logger.debug(f'Error: {error_msg}')
-        return jsonify({'success': False, 'error': error_msg}), 400
+    # if 'application/json' not in request.headers['Content-Type']:
+    #         return jsonify({'success': False, 'error': 'Invalid content type, expected application/json'}), 400
 
-    file = request.files['file']
-    if file.filename == '':
-        error_msg = 'No selected file'
-        if current_app.config['DEBUG']:
-            current_app.logger.debug(f'Error: {error_msg}')
-        return jsonify({'success': False, 'error': error_msg}), 400
+    data = request.json
+    center = data.get('center')
+    zoom = data.get('zoom')
 
-    filename = secure_filename(file.filename)
-    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_path)
+    if not center or not zoom:
+        return jsonify({'success': False, 'error': 'Missing required parameters: center and zoom'}), 400
+
+    # Fetch the static map image
+    try:
+        map_image = fetch_static_map_image(center, zoom)
+    except requests.RequestException as e:
+        return jsonify({'success': False, 'error': 'Failed to fetch static map image'}), 500
+
+    # Save the fetched image temporarily
+    temp_image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'temp_map_image.png')
+    with open(temp_image_path, 'wb') as img_file:
+        img_file.write(map_image)
+
     if current_app.config['DEBUG']:
-        current_app.logger.debug(f'File {filename} saved to {file_path}')
+        current_app.logger.debug(f'File {img_file} saved to {temp_image_path}')
 
     # Process the image and compute the embedding
-    image = cv2.imread(file_path)
+    image = cv2.imread(temp_image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     checkpoint_path = current_app.config['MODEL_CHECKPOINT_PATH']
     model_type = current_app.config['MODEL_TYPE']
@@ -61,10 +67,11 @@ def compute_embedding():
     if current_app.config['DEBUG']:
         current_app.logger.debug('Embedding computation completed.')
 
-    os.remove(file_path)  # Clean up the uploaded file
+    os.remove(temp_image_path)  # Clean up the uploaded file
 
     embedding_response = {
         'success': True,
+        'image': base64.b64encode(map_image).decode('utf-8'),
         'embedding': {
             'data': image_embedding.flatten().tolist(),
             'shape': image_embedding.shape,
@@ -72,3 +79,35 @@ def compute_embedding():
         }
     }
     return jsonify(embedding_response), 200
+
+
+
+
+def fetch_static_map_image(center, zoom, size="600x300", maptype="satellite"):
+    """
+    Fetches a static map image from the Google Maps Static API.
+
+    Args:
+        center (str): The center of the map (latitude,longitude).
+        zoom (int): The zoom level of the map.
+        size (str, optional): The size of the map image (widthxheight). Defaults to "600x300".
+        maptype (str, optional): The type of map to construct. Defaults to "satellite".
+
+    Returns:
+        bytes: The image data of the fetched static map.
+    """
+    GOOGLE_MAPS_STATIC_API_KEY = current_app.config['GOOGLE_MAPS_STATIC_API_KEY']
+    base_url = "https://maps.googleapis.com/maps/api/staticmap?"
+
+    params = {
+        "center": center,
+        "zoom": zoom,
+        "size": size,
+        "maptype": maptype,
+        "key": GOOGLE_MAPS_STATIC_API_KEY
+    }
+
+    response = requests.get(base_url, params=params)
+    response.raise_for_status()  # Raise an exception for bad requests
+
+    return response.content
