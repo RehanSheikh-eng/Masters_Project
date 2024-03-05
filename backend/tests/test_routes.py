@@ -1,7 +1,8 @@
 # tests/test_routes.py
 import os
 import unittest
-from flask import current_app
+from unittest.mock import patch
+from flask import current_app, json
 from werkzeug.datastructures import FileStorage
 from app import create_app
 from PIL import Image
@@ -54,6 +55,33 @@ class ComputeEmbeddingRouteTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json['success'])
         self.assertIn('error', response.json)
+
+
+class GPT4VEndpointTestCase(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app(config_name='testing')
+        self.client = self.app.test_client()
+
+    @patch('openai.OpenAI.completions.create')
+    def test_upload_gpt4v_success(self, mock_openai):
+        # Mock the OpenAI response
+        mock_openai.return_value = {
+            "choices": [{"message": {"content": "Mocked OpenAI response"}}]
+        }
+
+        # Prepare the data for your POST request
+        data = {
+            "file": "data:image/png;base64,....",  # Your base64 image string here
+            "prompt": "Describe this image.",
+            "max_tokens": 1000
+        }
+
+        response = self.client.post('/api/upload_gpt4v', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json['success'])
+        self.assertIn('Mocked OpenAI response', response.json['analysis'])
+
+
 
 if __name__ == '__main__':
     unittest.main()
