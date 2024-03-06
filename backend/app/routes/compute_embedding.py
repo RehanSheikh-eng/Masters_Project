@@ -33,13 +33,14 @@ def compute_embedding():
     data = request.json
     center = data.get('center')
     zoom = data.get('zoom')
+    size = data.get('size')
 
     if not center or not zoom:
         return jsonify({'success': False, 'error': 'Missing required parameters: center and zoom'}), 400
 
     # Fetch the static map image
     try:
-        map_image = fetch_static_map_image(center, zoom)
+        map_image = fetch_static_map_image(center, zoom, size=size)
     except requests.RequestException as e:
         return jsonify({'success': False, 'error': 'Failed to fetch static map image'}), 500
 
@@ -83,7 +84,7 @@ def compute_embedding():
 
 
 
-def fetch_static_map_image(center, zoom, size="600x300", maptype="satellite"):
+def fetch_static_map_image(center, zoom, size="600x300", maptype="satellite", scale=2):
     """
     Fetches a static map image from the Google Maps Static API.
 
@@ -103,6 +104,7 @@ def fetch_static_map_image(center, zoom, size="600x300", maptype="satellite"):
         "center": center,
         "zoom": zoom,
         "size": size,
+        "scale": scale,
         "maptype": maptype,
         "key": GOOGLE_MAPS_STATIC_API_KEY
     }

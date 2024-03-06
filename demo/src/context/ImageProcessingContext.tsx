@@ -10,15 +10,21 @@ import npyjs from "npyjs";
 
 // Define paths as constants or import them from a configuration file
 const MODEL_DIR = '/model/sam_onnx_quantized_example.onnx';
-const IMAGE_PATH = '/assets/data/homerton.jpg';
-const IMAGE_EMBEDDING = '/assets/data/homerton_embedding.npy';
+// const IMAGE_PATH = '/assets/data/homerton.jpg';
+// const IMAGE_EMBEDDING = '/assets/data/homerton_embedding.npy';
 
 // Define the context shape
 interface ImageProcessingContextType {
+  imageString: string | null;
+  setImageString: (imageString: string | null) => void;
   image: HTMLImageElement | null;
   setImage: (image: HTMLImageElement | null) => void;
   maskImg: HTMLImageElement | null;
   setMaskImg: (maskImg: HTMLImageElement | null) => void;
+  tensorFile: string | null;
+  setTensorFile: (tensorFile: string | null) => void;
+  tensor: Tensor | null;
+  setTensor: (tensor: Tensor | null) => void;
   clicks: modelInputProps[] | null;
   setClicks: (clicks: modelInputProps[]) => void;
   runOnnxModel: () => Promise<void>;
@@ -29,9 +35,11 @@ export const ImageProcessingContext = createContext<ImageProcessingContextType |
 
 // Context Provider Component
 export const ImageProcessingProvider = ({ children }: { children: ReactNode }) => {
+  const [imageString, setImageString] = useState<string | null>(null);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);
   const [model, setModel] = useState<InferenceSession | null>(null);
+  const [tensorFile, setTensorFile] = useState<string | null>(null);
   const [tensor, setTensor] = useState<Tensor | null>(null);
   const [modelScale, setModelScale] = useState<modelScaleProps | null>(null);
   const [clicks, setClicks] = useState<Array<modelInputProps> | null>(null);
@@ -52,13 +60,13 @@ export const ImageProcessingProvider = ({ children }: { children: ReactNode }) =
       initModel();
 
     // Load the image
-    const url = new URL(IMAGE_PATH, location.origin);
-    loadImage(url);
+    // const url = new URL(IMAGE_PATH, location.origin);
+    // loadImage(url);
 
-    // Load the Segment Anything pre-computed embedding
-    Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
-      (embedding) => setTensor(embedding)
-    );
+    // // Load the Segment Anything pre-computed embedding
+    // Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
+    //   (embedding) => setTensor(embedding)
+    // );
 
   }, []);
 
@@ -96,16 +104,19 @@ export const ImageProcessingProvider = ({ children }: { children: ReactNode }) =
       runOnnxModel();
   }, [clicks]);
   
-  /**
-   * Loads an image from the given URL and sets the model scale based on the dimensions of the loaded image.
-   *
-   * @param {URL} url - The URL of the image to be loaded
-   * @return {void} 
-   */
-  const loadImage = async (url: URL) => {
+
+  useEffect(() => {
+    if (imageString === null) return;
+    loadImage(imageString);
+  }, [imageString])
+
+
+
+
+  const loadImage = async (base64: string) => {
     try {
       const img = new Image();
-      img.src = url.href;
+      img.src = `data:image/png;base64,${base64}`;
       img.onload = () => {
         const { height, width, samScale } = handleImageScale(img);
         setModelScale({
@@ -122,13 +133,7 @@ export const ImageProcessingProvider = ({ children }: { children: ReactNode }) =
     }
   };
   
-  /**
-   * Loads a NPY tensor from the specified file and returns it as a Tensor object.
-   *
-   * @param {string} tensorFile - the file path of the NPY tensor
-   * @param {string} dType - the data type of the tensor
-   * @return {Tensor} the loaded NPY tensor as a Tensor object
-   */
+
   const loadNpyTensor = async (tensorFile: string, dType: string) => {
     let npLoader = new npyjs();
     const npArray = await npLoader.load(tensorFile);
@@ -138,10 +143,16 @@ export const ImageProcessingProvider = ({ children }: { children: ReactNode }) =
 
   // Provide state and helper functions through context
   const value = {
+    imageString,
+    setImageString,
     image,
     setImage,
     maskImg,
     setMaskImg,
+    tensorFile,
+    setTensorFile,
+    tensor,
+    setTensor,
     clicks,
     setClicks,
     runOnnxModel,
