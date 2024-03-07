@@ -11,38 +11,21 @@ def process_image():
     if current_app.config['DEBUG']:
         current_app.logger.debug('Starting the image processing API call')
 
-    # Initialize variables
-    base64_image = None
-    customPrompt = request.form.get('prompt', "Describe this image in detail.")
-    detail = request.form.get('detail', '')
-    max_tokens = request.form.get('max_tokens', 1000)
+    data = request.json
+    customPrompt = data.get('prompt', "Describe this image in detail.")
+    detail = data.get('detail', '')
+    max_tokens = data.get('max_tokens', 1000)
+    base64_image = data.get('file', None)
 
-    # Check if a file part exists in the request
-    if 'file' in request.files:
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'success': False, 'message': 'No selected file'}), 400
-
-        filename = secure_filename(file.filename)
-        # Convert the file read to base64
-        base64_image = base64.b64encode(file.read()).decode('utf-8')
-        if current_app.config['DEBUG']:
-            current_app.logger.debug('File uploaded and converted to base64')
-
-    # Fallback to base64 image string provided in JSON body if no file was uploaded
-    elif request.json and 'file' in request.json:
-        base64_image = request.json['file']
-        if current_app.config['DEBUG']:
-            current_app.logger.debug('Received image in base64 format from JSON')
+    if current_app.config['DEBUG']:
+        current_app.logger.debug(f'Prompt: {customPrompt}')
+        current_app.logger.debug('Received image in base64 format from JSON')
 
     if not base64_image:
         error_msg = 'No image provided'
         if current_app.config['DEBUG']:
             current_app.logger.debug(error_msg)
         return jsonify({'success': False, 'message': error_msg}), 400
-
-    if current_app.config['DEBUG']:
-        current_app.logger.debug(f'Using prompt: {customPrompt}')
 
     try:
 
@@ -69,7 +52,7 @@ def process_image():
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}"
+                                "url": base64_image
                                     }
                         }
                     ]
