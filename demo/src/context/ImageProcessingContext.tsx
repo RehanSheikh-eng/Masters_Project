@@ -6,12 +6,10 @@ import { onnxMaskToImage } from '../components/helpers/maskUtils';
 import { modelData } from '../components/helpers/onnxModelAPI';
 const ort = require("onnxruntime-web");  
 /* @ts-ignore */
-import npyjs from "npyjs";
 
 // Define paths as constants or import them from a configuration file
 const MODEL_DIR = '/model/sam_onnx_quantized_example.onnx';
-// const IMAGE_PATH = '/assets/data/homerton.jpg';
-// const IMAGE_EMBEDDING = '/assets/data/homerton_embedding.npy';
+
 
 // Define the context shape
 interface ImageProcessingContextType {
@@ -59,15 +57,6 @@ export const ImageProcessingProvider = ({ children }: { children: ReactNode }) =
       };
       initModel();
 
-    // Load the image
-    // const url = new URL(IMAGE_PATH, location.origin);
-    // loadImage(url);
-
-    // // Load the Segment Anything pre-computed embedding
-    // Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
-    //   (embedding) => setTensor(embedding)
-    // );
-
   }, []);
 
   const runOnnxModel = async () => {
@@ -110,9 +99,6 @@ export const ImageProcessingProvider = ({ children }: { children: ReactNode }) =
     loadImage(imageString);
   }, [imageString])
 
-
-
-
   const loadImage = async (base64: string) => {
     try {
       const img = new Image();
@@ -133,13 +119,6 @@ export const ImageProcessingProvider = ({ children }: { children: ReactNode }) =
     }
   };
   
-
-  const loadNpyTensor = async (tensorFile: string, dType: string) => {
-    let npLoader = new npyjs();
-    const npArray = await npLoader.load(tensorFile);
-    const tensor = new ort.Tensor(dType, npArray.data, npArray.shape);
-    return tensor;
-  };
 
   // Provide state and helper functions through context
   const value = {
