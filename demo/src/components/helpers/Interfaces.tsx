@@ -27,3 +27,9 @@ export interface modeDataProps {
 export interface ToolProps {
   handleMouseMove: (e: any) => void;
 }
+
+export interface MessageInterface {
+  id: number;
+  text: string;
+  role: string;
+}
