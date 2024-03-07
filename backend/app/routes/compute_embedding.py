@@ -84,7 +84,7 @@ def compute_embedding():
 
 
 
-def fetch_static_map_image(center, zoom, size="600x300", maptype="satellite", scale=2):
+def fetch_static_map_image(center, zoom, size="600x300", maptype="satellite", scale=1):
     """
     Fetches a static map image from the Google Maps Static API.
 
