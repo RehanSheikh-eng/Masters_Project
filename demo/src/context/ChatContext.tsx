@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useImageProcessing } from './ImageProcessingContext';
 import { MessageInterface } from '../components/helpers/Interfaces';
-import axios from 'axios';
 
 interface ChatContextType {
   messages: MessageInterface[];
