@@ -52,7 +52,12 @@ parser.add_argument(
     help="The path to the SAM checkpoint to use for mask generation.",
 )
 
-parser.add_argument("--device", type=str, default="cuda", help="The device to run generation on.")
+parser.add_argument(
+    "--device",
+    type=str,
+    default="cuda",
+    help="The device to run generation on."
+)
 
 parser.add_argument(
     "--convert-to-rle",

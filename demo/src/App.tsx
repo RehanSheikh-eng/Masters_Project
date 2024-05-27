@@ -8,7 +8,7 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import Chat from './components/Chat/Chat';
 
 const App = () => {
-  const GOOGLE_API_KEY = "AIzaSyAtwbpPJw7ExShbQwodo-YQauutmlWsjWU";
+  const GOOGLE_API_KEY = "AIzaSyCdSRmcVgbj7HYjKTmJPC7HXhXpmRw0SpM";
   return (
     <ImageProcessingProvider>
       <ChatProvider>
